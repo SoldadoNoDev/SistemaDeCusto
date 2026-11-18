@@ -1,0 +1,152 @@
+<div class="app-layout">
+  <!-- Top Navigation Header -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-logo font-mono">
+        <span class="logo-icon">▲</span>
+        <span class="logo-text">ZENITH</span>
+      </div>
+      <span class="brand-sub font-mono">FINOPS 2.4</span>
+      <span class="brand-divider">/</span>
+      <div class="cloud-status-pill font-mono">
+        <span class="live-pulse"></span>
+        <span>TELEMETRIA MULTI-CLOUD</span>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Global Team Filter Selector -->
+      <div class="team-nav-filter font-mono">
+        <app-icon name="users" [size]="14" class="team-nav-icon" />
+        <span class="team-filter-label hide-mobile">Filtro de Time:</span>
+        <select
+          class="team-nav-select"
+          [ngModel]="dataService.selectedGlobalTeam()"
+          (ngModelChange)="dataService.setGlobalTeam($event)"
+        >
+          <option value="All">Todos os Times (Global)</option>
+          @for (team of dataService.teams(); track team.id) {
+            <option [value]="team.id">{{ team.name }} ({{ team.costCenter }})</option>
+          }
+        </select>
+      </div>
+
+      <!-- Current Billing Cycle Badge -->
+      <div class="billing-cycle font-mono">
+        <span class="cycle-label">Ciclo:</span>
+        <strong class="cycle-val">Nov 2026</strong>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button
+        class="btn btn-secondary btn-icon"
+        (click)="dataService.toggleTheme()"
+        [title]="dataService.theme() === 'dark' ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro'"
+      >
+        @if (dataService.theme() === 'dark') {
+          <app-icon name="sun" [size]="15" />
+        } @else {
+          <app-icon name="moon" [size]="15" />
+        }
+      </button>
+
+      <!-- Quick Action: Reset Demo -->
+      <button
+        class="btn btn-ghost btn-sm"
+        title="Restaurar dados originais"
+        (click)="dataService.resetToDefaultDemoData()"
+      >
+        <app-icon name="refresh" [size]="13" />
+        <span class="hide-mobile">Restaurar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Body Content: Sidebar + Active View -->
+  <div class="main-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <span class="sidebar-caption">GOVERNANÇA & MÓDULOS</span>
+        <nav class="sidebar-nav">
+          @for (item of navItems; track item.id) {
+            <button
+              class="nav-button"
+              [class.active]="dataService.activeTab() === item.id"
+              (click)="dataService.setTab(item.id)"
+            >
+              <div class="nav-left">
+                <app-icon [name]="item.icon" [size]="16" />
+                <span class="nav-label">{{ item.label }}</span>
+              </div>
+
+              @if (item.badge) {
+                <span class="nav-badge font-mono">{{ item.badge }}</span>
+              } @else if (item.id === 'anomalies' && dataService.activeAnomaliesCount() > 0) {
+                <span class="nav-alert-dot font-mono">{{ dataService.activeAnomaliesCount() }}</span>
+              }
+            </button>
+          }
+        </nav>
+      </div>
+
+      <!-- Sidebar Footer Info -->
+      <div class="sidebar-footer">
+        <div class="footer-card">
+          <div class="footer-top">
+            <span class="footer-label font-mono">SPEND CONSOLIDADO</span>
+            <span class="footer-val font-mono">\${{ dataService.totalSpendMTD() | number: '1.0-0' }}</span>
+          </div>
+          <div class="footer-track">
+            <div
+              class="footer-fill"
+              [style.width.%]="(dataService.totalSpendMTD() / dataService.projectedSpendEndOfMonth()) * 100"
+            ></div>
+          </div>
+          <span class="footer-sub font-mono">
+            Projeção: \${{ dataService.projectedSpendEndOfMonth() | number: '1.0-0' }}
+          </span>
+        </div>
+
+        <div class="version-tag font-mono">
+          <span>ZENITH FINOPS v2.4.0</span>
+          <span>•</span>
+          <span>ENTERPRISE</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main View Viewport -->
+    <main class="content-viewport">
+      @switch (dataService.activeTab()) {
+        @case ('overview') {
+          <app-dashboard />
+        }
+        @case ('teams') {
+          <app-teams />
+        }
+        @case ('cost-explorer') {
+          <app-cost-explorer />
+        }
+        @case ('budgets') {
+          <app-budgets />
+        }
+        @case ('recommendations') {
+          <app-recommendations />
+        }
+        @case ('accounts') {
+          <app-accounts />
+        }
+        @case ('anomalies') {
+          <app-anomalies />
+        }
+        @default {
+          <app-dashboard />
+        }
+      }
+    </main>
+  </div>
+
+  <!-- Toast Notification Host -->
+  <app-toast />
+</div>
